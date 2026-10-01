@@ -73,16 +73,41 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 
 add_executable(Fusion src/fusion_node.cpp src/utils.cpp src/utils.hpp src/kalman.hpp src/kalman.cpp)
 
-# === Trimmed (2026-10-01): only the Fusion executable remains.
-# Previously also built: ControlGen, ControlGen2, ControlGen3 (maneuver models),
-# kalman_test (unit test), object_factor_graph_fusion_node (GTSAM offline fusion).
+# === Maneuver model (re-added 2026-10-01) ===
+# ControlGen2 = pure-pursuit + NonlinCircleFit path tracker.
+# Requires MATLAB-generated C code under src/codegen/ (WayPtsAhead2, NonlinCircleFit).
+# If codegen/ is empty, this build will fail — restore from backup or re-run MATLAB Coder.
+add_executable(ControlGen2
+  src/ControlGenerator2.cpp
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2.cpp
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2.h
+  src/codegen/lib/WayPtsAhead2/spline.cpp
+  src/codegen/lib/WayPtsAhead2/spline.h
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_types.h
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_terminate.cpp
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_terminate.h
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_initialize.cpp
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_initialize.h
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_data.cpp
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_data.h
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit.h
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit.cpp
+  src/codegen/lib/NonlinCircleFit/rt_nonfinite.h
+  src/codegen/lib/NonlinCircleFit/rt_nonfinite.cpp
+)
+# NOTE: the MATLAB codegen usually emits additional rt_*.cpp / rt_*.h files
+# (rt_nonfinite, rtGetInf, rtGetNaN, rtGetMinusInf, rttypes). If you see
+# "undefined reference to rtGetInf" at link time, add those files here too.
 
 target_link_libraries(Fusion "${cpp_typesupport_target}")
+target_link_libraries(ControlGen2 "${cpp_typesupport_target}")
 
 ament_target_dependencies(Fusion rclcpp tf2)
+ament_target_dependencies(ControlGen2 rclcpp tf2)
 
 install(TARGETS
   Fusion
+  ControlGen2
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
