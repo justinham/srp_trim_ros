@@ -81,25 +81,43 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 # from a backup (USB or git history).
 
 # MATLAB codegen source list — shared across all 3 ControlGen variants
+# Based on what codegen/lib/{WayPtsAhead2,NonlinCircleFit}/ actually contains.
+# Run a `find codegen/lib -name '*.cpp' -o -name '*.h'` to regenerate this list
+# if MATLAB Coder emits new files.
 set(CONTROLGEN_CODEGEN_SOURCES
+  # WayPtsAhead2 — pure-pursuit lookahead waypoint picker
   src/codegen/lib/WayPtsAhead2/WayPtsAhead2.cpp
   src/codegen/lib/WayPtsAhead2/WayPtsAhead2.h
-  src/codegen/lib/WayPtsAhead2/spline.cpp
-  src/codegen/lib/WayPtsAhead2/spline.h
-  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_types.h
-  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_terminate.cpp
-  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_terminate.h
-  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_initialize.cpp
-  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_initialize.h
   src/codegen/lib/WayPtsAhead2/WayPtsAhead2_data.cpp
   src/codegen/lib/WayPtsAhead2/WayPtsAhead2_data.h
-  src/codegen/lib/NonlinCircleFit/NonlinCircleFit.h
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_initialize.cpp
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_initialize.h
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_terminate.cpp
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_terminate.h
+  src/codegen/lib/WayPtsAhead2/WayPtsAhead2_types.h
+  src/codegen/lib/WayPtsAhead2/spline.cpp
+  src/codegen/lib/WayPtsAhead2/spline.h
+  src/codegen/lib/WayPtsAhead2/rtwtypes.h
+
+  # NonlinCircleFit — circular arc fitting
   src/codegen/lib/NonlinCircleFit/NonlinCircleFit.cpp
-  src/codegen/lib/NonlinCircleFit/rt_nonfinite.h
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit.h
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit_data.cpp
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit_data.h
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit_initialize.cpp
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit_initialize.h
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit_terminate.cpp
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit_terminate.h
+  src/codegen/lib/NonlinCircleFit/NonlinCircleFit_types.h
+
+  # MATLAB runtime helpers (Inf / NaN checks)
   src/codegen/lib/NonlinCircleFit/rt_nonfinite.cpp
+  src/codegen/lib/NonlinCircleFit/rt_nonfinite.h
+  src/codegen/lib/NonlinCircleFit/rtGetInf.cpp
+  src/codegen/lib/NonlinCircleFit/rtGetInf.h
+  src/codegen/lib/NonlinCircleFit/rtGetNaN.cpp
+  src/codegen/lib/NonlinCircleFit/rtGetNaN.h
 )
-# (if you get "undefined reference to rtGetInf" at link time, add the
-#  rt_GetInf.cpp / rt_GetNaN.cpp / rt_types.h files to CONTROLGEN_CODEGEN_SOURCES)
 
 # Build ControlGen, ControlGen2, ControlGen3 only if codegen is present
 foreach(_codegen_src ${CONTROLGEN_CODEGEN_SOURCES})

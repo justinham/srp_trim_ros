@@ -109,3 +109,19 @@ ros_ws/src/*/log/
 # ROS runtime logs
 *.log
 
+
+# C/C++ build artifacts (MATLAB codegen etc.)
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+
+# MATLAB Coder report files
+*.dmr
+*.mldatx
+
+# Don't track codegen build report files (but DO track the source)
+ros_ws/src/fusion/src/codegen/lib/*/html/
+ros_ws/src/fusion/src/codegen/lib/*/interface/
+ros_ws/src/fusion/src/codegen/lib/*/examples/
