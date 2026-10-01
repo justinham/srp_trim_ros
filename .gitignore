@@ -125,3 +125,6 @@ ros_ws/src/*/log/
 ros_ws/src/fusion/src/codegen/lib/*/html/
 ros_ws/src/fusion/src/codegen/lib/*/interface/
 ros_ws/src/fusion/src/codegen/lib/*/examples/
+
+# MATLAB MEX files (not needed for C++ build)
+ros_ws/src/fusion/src/codegen/mex/
