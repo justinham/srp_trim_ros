@@ -15,12 +15,12 @@ find_package(rosgraph_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 
-# GTSAM is no longer required since object_factor_graph_fusion_node was removed.
-# Re-enable if you re-add the GTSAM factor-graph fusion node:
-# if(DEFINED ENV{HOME})
-#   list(APPEND CMAKE_PREFIX_PATH "$ENV{HOME}/.local/gtsam-4.2")
-# endif()
-# find_package(GTSAM REQUIRED)
+# GTSAM is only required by object_factor_graph_fusion_node.
+# Uncomment if you restore that node AND have GTSAM built locally.
+if(DEFINED ENV{HOME})
+  list(APPEND CMAKE_PREFIX_PATH "$ENV{HOME}/.local/gtsam-4.2")
+endif()
+find_package(GTSAM)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -71,14 +71,17 @@ include_directories(./include/hungarian)
 rosidl_get_typesupport_target(cpp_typesupport_target
   ${PROJECT_NAME} rosidl_typesupport_cpp)
 
-add_executable(Fusion src/fusion_node.cpp src/utils.cpp src/utils.hpp src/kalman.hpp src/kalman.cpp)
+# === Maneuver models (re-added 2026-10-01) ===
+# ControlGen / ControlGen2 / ControlGen3 are path trackers using
+# pure-pursuit + NonlinCircleFit (MATLAB-generated C code).
+#
+# Each requires the MATLAB codegen library at src/codegen/lib/.
+# If codegen/ is missing, the build will skip that target.
+# To restore codegen: copy src/codegen/lib/{WayPtsAhead2,NonlinCircleFit}/
+# from a backup (USB or git history).
 
-# === Maneuver model (re-added 2026-10-01) ===
-# ControlGen2 = pure-pursuit + NonlinCircleFit path tracker.
-# Requires MATLAB-generated C code under src/codegen/ (WayPtsAhead2, NonlinCircleFit).
-# If codegen/ is empty, this build will fail — restore from backup or re-run MATLAB Coder.
-add_executable(ControlGen2
-  src/ControlGenerator2.cpp
+# MATLAB codegen source list — shared across all 3 ControlGen variants
+set(CONTROLGEN_CODEGEN_SOURCES
   src/codegen/lib/WayPtsAhead2/WayPtsAhead2.cpp
   src/codegen/lib/WayPtsAhead2/WayPtsAhead2.h
   src/codegen/lib/WayPtsAhead2/spline.cpp
@@ -95,19 +98,70 @@ add_executable(ControlGen2
   src/codegen/lib/NonlinCircleFit/rt_nonfinite.h
   src/codegen/lib/NonlinCircleFit/rt_nonfinite.cpp
 )
-# NOTE: the MATLAB codegen usually emits additional rt_*.cpp / rt_*.h files
-# (rt_nonfinite, rtGetInf, rtGetNaN, rtGetMinusInf, rttypes). If you see
-# "undefined reference to rtGetInf" at link time, add those files here too.
+# (if you get "undefined reference to rtGetInf" at link time, add the
+#  rt_GetInf.cpp / rt_GetNaN.cpp / rt_types.h files to CONTROLGEN_CODEGEN_SOURCES)
+
+# Build ControlGen, ControlGen2, ControlGen3 only if codegen is present
+foreach(_codegen_src ${CONTROLGEN_CODEGEN_SOURCES})
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_codegen_src}")
+    message(WARNING "codegen source missing: ${_codegen_src} \u2014 skipping ControlGen builds. Restore src/codegen/lib/ from backup to enable.")
+    set(_CONTROLGEN_AVAILABLE FALSE)
+    break()
+  endif()
+endforeach()
+if(_CONTROLGEN_AVAILABLE)
+  add_executable(ControlGen   src/ControlGenerator.cpp  ${CONTROLGEN_CODEGEN_SOURCES})
+  add_executable(ControlGen2  src/ControlGenerator2.cpp ${CONTROLGEN_CODEGEN_SOURCES})
+  add_executable(ControlGen3  src/ControlGenerator3.cpp ${CONTROLGEN_CODEGEN_SOURCES})
+endif()
+
+add_executable(Fusion src/fusion_node.cpp src/utils.cpp src/utils.hpp src/kalman.hpp src/kalman.cpp)
+add_executable(kalman_test src/kalman_test.cpp src/kalman.cpp)
+
+# GTSAM-backed factor-graph fusion (optional)
+if(GTSAM_FOUND)
+  add_executable(object_factor_graph_fusion_node
+    src/object_factor_graph_fusion_node.cpp
+  )
+  target_link_libraries(object_factor_graph_fusion_node "${cpp_typesupport_target}" gtsam)
+  set_target_properties(object_factor_graph_fusion_node PROPERTIES
+    BUILD_RPATH "$<TARGET_FILE_DIR:gtsam>"
+    INSTALL_RPATH "$<TARGET_FILE_DIR:gtsam>"
+  )
+else()
+  message(WARNING "GTSAM not found \u2014 skipping object_factor_graph_fusion_node")
+endif()
 
 target_link_libraries(Fusion "${cpp_typesupport_target}")
-target_link_libraries(ControlGen2 "${cpp_typesupport_target}")
+target_link_libraries(kalman_test "${cpp_typesupport_target}")
+if(_CONTROLGEN_AVAILABLE)
+  target_link_libraries(ControlGen "${cpp_typesupport_target}")
+  target_link_libraries(ControlGen2 "${cpp_typesupport_target}")
+  target_link_libraries(ControlGen3 "${cpp_typesupport_target}")
+endif()
+if(GTSAM_FOUND)
+  target_link_libraries(object_factor_graph_fusion_node "${cpp_typesupport_target}" gtsam)
+endif()
 
 ament_target_dependencies(Fusion rclcpp tf2)
-ament_target_dependencies(ControlGen2 rclcpp tf2)
+ament_target_dependencies(kalman_test rclcpp tf2)
+if(_CONTROLGEN_AVAILABLE)
+  ament_target_dependencies(ControlGen rclcpp tf2)
+  ament_target_dependencies(ControlGen2 rclcpp tf2)
+  ament_target_dependencies(ControlGen3 rclcpp tf2)
+endif()
+if(GTSAM_FOUND)
+  ament_target_dependencies(object_factor_graph_fusion_node rclcpp tf2)
+endif()
 
-install(TARGETS
-  Fusion
-  ControlGen2
-  DESTINATION lib/${PROJECT_NAME})
+# === Install set ===
+set(_INSTALL_TARGETS Fusion kalman_test)
+if(_CONTROLGEN_AVAILABLE)
+  list(APPEND _INSTALL_TARGETS ControlGen ControlGen2 ControlGen3)
+endif()
+if(GTSAM_FOUND)
+  list(APPEND _INSTALL_TARGETS object_factor_graph_fusion_node)
+endif()
+install(TARGETS ${_INSTALL_TARGETS} DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
