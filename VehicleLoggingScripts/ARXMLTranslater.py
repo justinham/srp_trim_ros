@@ -1,0 +1,12 @@
+import cantools
+import can
+
+db = cantools.database.load_file('/home/kzb068/Downloads/MY24CAN8.dbc')
+#decodedMsg = db.decode_message(0xDE, b'\x50\x80\x1B\x02\x13\x00\xFF\xF9\xFF\xF4\x53\xA7\x93\x20\x03\xE5\xB2\xD5\xD0\x07\x53\xE9\x90\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x0C\x0A\x50\x80\xAF\xFC\x00\x48\xCB\x00\x00\x2D\x88\x55\xCF\xF8\x07\xFC\xE0\x00\xFF\xC0\x01\xC2\x80\x00\x00\x00\x00\x00')
+#print(decodedMsg)
+#print(db.get_message_by_frame_id(0xd7).signals)
+for m in db.get_message_by_frame_id(0xd7).signals:
+    print(m.name)
+
+#for msg in can.LogReader('/home/kzb068/Downloads/Lyriqtest3.asc'):
+#    print(msg)

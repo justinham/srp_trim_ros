@@ -1,0 +1,63 @@
+{
+  "fcm": {
+    "fov": 100,
+    "range": 100,
+    "x": 1.5,
+    "y": 0,
+    "yaw": 0,
+    "path": "/home/connau/Documents/gazebo_visuals/models/camera_fov_pie/model.sdf",
+    "path_green": "/home/connau/Documents/gazebo_visuals/models/camera_fov_pie_green/model.sdf",
+    "std_0": 0.30008838371420826,
+    "std_5": 1.177921184582073,
+    "std_10": 0.7102863492151918,
+    "std_15": 1.283579459334189
+  },
+  "srr": {
+    "fov": 150,
+    "range": 90,
+    "x": 3,
+    "y": 0,
+    "yaw": 0,
+    "path": "/home/connau/Documents/gazebo_visuals/models/srr_fov_pie/model.sdf",
+    "path_green": "/home/connau/Documents/gazebo_visuals/models/srr_fov_pie_green/model.sdf"
+  },
+  "lrr": {
+    "fov": 90,
+    "range": 180,
+    "x": 3,
+    "y": 0,
+    "yaw": 0,
+    "path": "/home/connau/Documents/gazebo_visuals/models/lrr_fov_pie/model.sdf",
+    "path_green": "/home/connau/Documents/gazebo_visuals/models/lrr_fov_pie_green/model.sdf",
+    "std_0": 1.8251249364952613,
+    "std_5": 1.6729411928822384,
+    "std_10": 2.034917289810119,
+    "std_15": 1.184748728520708
+  },
+  "l_srr": {
+    "fov": 150,
+    "range": 90,
+    "x": 3,
+    "y": -1,
+    "yaw": -45,
+    "path": "/home/connau/Documents/gazebo_visuals/models/srr_fov_pie/model.sdf",
+    "path_green": "/home/connau/Documents/gazebo_visuals/models/srr_fov_pie_green/model.sdf",
+    "std_0": 1.993318703135391,
+    "std_5": 1.5498820773292588,
+    "std_10": 0.780313056108435,
+    "std_15": 0.5803534255545285
+  },
+  "r_srr": {
+    "fov": 150,
+    "range": 90,
+    "x": 3,
+    "y": 1,
+    "yaw": 45,
+    "path": "/home/connau/Documents/gazebo_visuals/models/srr_fov_pie/model.sdf",
+    "path_green": "/home/connau/Documents/gazebo_visuals/models/srr_fov_pie_green/model.sdf",
+    "std_0": 2.0684310961523016,
+    "std_5": 1.2510249953033354,
+    "std_10": 1.4706812738348884,
+    "std_15": 0.7189865130909417
+  }
+}
